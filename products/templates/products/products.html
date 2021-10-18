@@ -15,11 +15,9 @@
 
                 <h1 class="my-4">GeekShop</h1>
                 <div class="list-group">
-                    <a href="#" class="list-group-item">Новинки</a>
-                    <a href="#" class="list-group-item">Одежда</a>
-                    <a href="#" class="list-group-item">Обувь</a>
-                    <a href="#" class="list-group-item">Аксессуары</a>
-                    <a href="#" class="list-group-item">Подарки</a>
+                    {% for category in categories_list %}
+                        <a href="#" class="list-group-item">{{ category.name }}</a>
+                    {% endfor %}
                 </div>
 
             </div>
@@ -61,15 +59,15 @@
                             <div class="card h-100">
                                 <a href="#">
                                     <img class="card-img-top"
-                                         src="{% static item.img %}" alt="">
+                                         src="{{ item.image.url }}" alt="">
                                 </a>
                                 <div class="card-body">
                                     <h4 class="card-title">
                                         <a href="#">{{ item.name }}</a>
                                     </h4>
-                                    <h5>{{ item.cost }},00 руб.</h5>
+                                    <h5>{{ item.price }} руб.</h5>
                                     <p class="card-text">{{ item.description }}</p>
-                                </div>static/
+                                </div>
                                 <div class="card-footer text-center">
                                     <button type="button" class="btn btn-outline-success">Отправить в корзину</button>
                                 </div>
@@ -110,3 +108,4 @@
         <!-- /.container -->
     </footer>
 {% endblock %}
+
