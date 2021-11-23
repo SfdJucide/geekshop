@@ -4,8 +4,10 @@ from django.urls import reverse
 from django.contrib import auth
 from django.contrib import messages
 from baskets.models import Basket
+from users.models import User
 
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
+from users.services import send_verify_email
 
 
 def login(request):
@@ -31,9 +33,10 @@ def registration(request):
     if request.method == 'POST':
         form = UserRegistrationForm(data=request.POST)
         if form.is_valid():
-            form.save()
+            new_user = form.save()
             messages.success(request, "You have successfully registered")
-            return HttpResponseRedirect(reverse('users:login'))
+            send_verify_email(new_user)
+            return HttpResponseRedirect(reverse('index'))
     else:
         form = UserRegistrationForm()
     context = {
@@ -61,3 +64,13 @@ def profile(request):
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect(reverse('index'))
+
+
+def verify(request, email, key):
+    user = User.objects.filter(email=email).first()
+    if user:
+        if user.activate_key == key and not user.is_activate_key_expired():
+            user.activate()
+            auth.login(request, user)
+
+    return render(request, 'users/register_result.html')

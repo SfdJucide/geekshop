@@ -1,5 +1,12 @@
+import hashlib
+
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
 from django import forms
+
+from django.conf import settings
+
+import pytz
+from datetime import datetime
 
 from users.models import User
 
@@ -32,6 +39,16 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+
+    def save(self, *args, **kwargs):
+        user = super().save(*args, **kwargs)
+        user.is_active = False
+
+        user.activate_key = hashlib.sha1(user.email.encode('utf8')).hexdigest()
+        user.activate_key_expired = datetime.now(pytz.timezone(settings.TIME_ZONE))
+        user.save()
+
+        return user
 
 
 class UserProfileForm(UserChangeForm):
