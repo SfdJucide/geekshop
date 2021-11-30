@@ -1,6 +1,3 @@
-import json
-import os
-
 from django.shortcuts import render
 
 from baskets.models import Basket

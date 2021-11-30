@@ -1,8 +1,7 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect
-from django.urls import reverse
 
 from baskets.models import Basket
 from ordersapp.models import Order, OrderItem
@@ -97,7 +96,7 @@ class OrderDeleteView(DeleteView):
     success_url = reverse_lazy('order:list')
 
 
-class OrderDetailView(DeleteView):
+class OrderDetailView(DetailView):
     model = Order
 
 
