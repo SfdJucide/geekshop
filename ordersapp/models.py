@@ -4,7 +4,21 @@ from django.conf import settings
 from products.models import Product
 
 
+class OrderQuerySet(models.QuerySet):
+
+    def delete(self, *args, **kwargs):
+        for object in self:
+            for item in object.orderitems.select_related():
+                item.product.quantity += item.quantity
+                item.product.save()
+            object.is_active = False
+            object.save()
+        super().delete(*args, **kwargs)
+
+
 class Order(models.Model):
+    objects = OrderQuerySet.as_manager()
+
     STATUS_FORMING = 'FM'
     STATUS_SEND_TO_PROCEED = 'STP'
     STATUS_PROCEEDED = 'PRD'
