@@ -1,7 +1,14 @@
+import hashlib
+
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
 from django import forms
 
-from users.models import User
+from django.conf import settings
+
+import pytz
+from datetime import datetime
+
+from users.models import User, UserProfile
 
 
 class UserLoginForm(AuthenticationForm):
@@ -33,6 +40,16 @@ class UserRegistrationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
 
+    def save(self, *args, **kwargs):
+        user = super().save(*args, **kwargs)
+        user.is_active = False
+
+        user.activate_key = hashlib.sha1(user.email.encode('utf8')).hexdigest()
+        user.activate_key_expired = datetime.now(pytz.timezone(settings.TIME_ZONE))
+        user.save()
+
+        return user
+
 
 class UserProfileForm(UserChangeForm):
     first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control py-4'}))
@@ -44,3 +61,16 @@ class UserProfileForm(UserChangeForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'image')
+
+
+class UserProfileEditForm(forms.ModelForm):
+
+    class Meta:
+        model = UserProfile
+        exclude = ('user',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            field.help_text = ''
