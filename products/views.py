@@ -1,11 +1,15 @@
 from django.shortcuts import render
+from django.views.decorators.cache import cache_page
 
 from baskets.models import Basket
 from products.models import Product, ProductCategory
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.cache import cache
+from django.conf import settings
 # Create your views here.
 
 
+@cache_page(4200)
 def index(request):
     context = {
         "title": 'GeekShop',
@@ -13,10 +17,20 @@ def index(request):
     return render(request, 'products/index.html', context)
 
 
+def get_categories():
+    if settings.LOW_CACHE:
+        key = 'categories'
+        categories = cache.get(key)
+        if categories is None:
+            categories = ProductCategory.objects.all()
+            cache.set(key, categories)
+    return ProductCategory.objects.all()
+
+
 def products(request, category_id=None, page=1):
     context = {
         "title": 'GeekShop - Каталог',
-        "categories_list": ProductCategory.objects.all(),
+        "categories_list": get_categories,
     }
 
     if category_id:
